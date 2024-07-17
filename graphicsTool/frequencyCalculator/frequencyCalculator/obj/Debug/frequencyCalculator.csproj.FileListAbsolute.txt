@@ -1,0 +1,10 @@
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\bin\Debug\frequencyCalculator.exe.config
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\bin\Debug\frequencyCalculator.exe
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\bin\Debug\frequencyCalculator.pdb
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.csproj.AssemblyReference.cache
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.Form1.resources
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.Properties.Resources.resources
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.csproj.GenerateResource.cache
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.csproj.CoreCompileInputs.cache
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.exe
+C:\git\Projects\graphicsTool\frequencyCalculator\frequencyCalculator\obj\Debug\frequencyCalculator.pdb
