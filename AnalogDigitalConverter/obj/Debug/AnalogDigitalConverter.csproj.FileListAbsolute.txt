@@ -1,0 +1,10 @@
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\bin\Debug\AnalogDigitalConverter.exe.config
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\bin\Debug\AnalogDigitalConverter.exe
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\bin\Debug\AnalogDigitalConverter.pdb
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.csproj.AssemblyReference.cache
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.Form1.resources
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.Properties.Resources.resources
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.csproj.GenerateResource.cache
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.csproj.CoreCompileInputs.cache
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.exe
+C:\git\Softwares\AnalogDigitalConverter\AnalogDigitalConverter\obj\Debug\AnalogDigitalConverter.pdb
