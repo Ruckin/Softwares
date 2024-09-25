@@ -1,3 +1,5 @@
+from fileinput import filename
+
 import pygame as pg
 from camera import *
 from object_3d import *
@@ -14,22 +16,23 @@ class softwareRender:
         self.create_object_3D()
 
     def create_object_3D (self):
-        self.camera = Camera(self, [0.5, 1, -4])
+        self.camera = Camera(self, [-5, 6, -55])
         self.projection = Projection(self)
-        self.object = Object3D(self)
-        self.object.translate([0.2, 0.4, 0.2])
-        self.axes = Axes(self)
-        self.axes.translate([0.7, 0.9, 0.7])
-        self.worldAxes = Axes(self)
-        self.worldAxes.movementFlag = False
-        self.worldAxes.scale(2)
-        self.worldAxes.translate([0.00001, 0.00001, 0.00001])
-        #self.object.rotate_y(np.pi / 6)
+        self.object = self.getObject('resources/t_34_obj.obj')
+
+    def getObject(self, filename):
+        vertex, face = [], []
+        with open(filename) as f:
+            for line in f:
+                if line.startswith('v '):
+                    vertex.append([float(i) for i in line.split()[1:]] + [1])
+                elif line.startswith('f'):
+                    faces = line.split()[1:]
+                    face.append([int(face_.split('/')[0]) - 1 for face_ in faces])
+        return Object3D(self, vertex, face)
 
     def draw(self):
         self.screen.fill(pg.Color('darkslategray'))
-        self.worldAxes.draw()
-        self.axes.draw()
         self.object.draw()
 
     def run(self):
