@@ -44,7 +44,7 @@ def flatModel_eom(t, x, amod):
     """
 
     # PRELOADING THE SPACE FOR THE TIME DERIVATIVE:
-    dx = np.array((12, 1))
+    dx = np.empty((12,), dtype = float)
 
     # ASSINGING VARIABLE NAME TO THE STATES:
     u_b_mps   = x[0]
@@ -61,11 +61,11 @@ def flatModel_eom(t, x, amod):
     p3_n_m    = x[11]
 
     # LOADING THE DATA:
-    m_kg       = amod([m_kg])
-    Jxz_b_kgm2 = amod([Jxz_b_kgm2])
-    Jxx_b_kgm2 = amod([Jxx_b_kgm2])
-    Jyy_b_kgm2 = amod([Jyy_b_kgm2])
-    Jzz_b_kgm2 = amod([Jzz_b_kgm2])
+    m_kg       = amod["m_kg"]
+    Jxz_b_kgm2 = amod["Jxz_b_kgm2"]
+    Jxx_b_kgm2 = amod["Jxx_b_kgm2"]
+    Jyy_b_kgm2 = amod["Jyy_b_kgm2"]
+    Jzz_b_kgm2 = amod["Jzz_b_kgm2"]
 
     # AIR DATA CALCULATION(Mach, Altitude, AoA, AoS):
     # ATMOSPHERIC MODEL:
@@ -80,14 +80,14 @@ def flatModel_eom(t, x, amod):
     gz_b_mps2 = math.cos(phi_rad)*math.cos(theta_rad)*gz_n_mps2
 
     # EXTERNAL FORCES:
-    Fx_b_kgmps2 = []
-    Fy_b_kgmps2 = []
-    Fz_b_kgmps2 = []
+    Fx_b_kgmps2 = 0
+    Fy_b_kgmps2 = 0
+    Fz_b_kgmps2 = 0
 
     # EXTERNAL MOMENTS:
-    l_b_kgm2ps2 = []
-    m_b_kgm2ps2 = []
-    n_b_kgm2ps2 = []
+    l_b_kgm2ps2 = 0
+    m_b_kgm2ps2 = 0
+    n_b_kgm2ps2 = 0
 
     # DENOMINATOR IN ROLL AND YAW RATE EQUATIONS:
     Den = Jxx_b_kgm2*Jzz_b_kgm2 - Jxz_b_kgm2
@@ -127,13 +127,14 @@ def flatModel_eom(t, x, amod):
             Jxz_b_kgm2*n_b_kgm2ps2)/Den
 
     # KINEMATICS EQUATIONS:
-    dx[6] = []
-    dx[7] = []
-    dx[8] = []
+    # EULER KINEMATICS
+    dx[6] = p_b_rps + math.tan(theta_rad)*(math.sin(phi_rad)*q_b_rps + math.cos(phi_rad)*r_b_rps)
+    dx[7] = math.cos(phi_rad)*q_b_rps - math.sin(phi_rad)*r_b_rps
+    dx[8] = 1/math.cos(theta_rad)*(math.sin(phi_rad)*q_b_rps + math.cos(phi_rad)*r_b_rps)
 
     # POSITION (NAVIGATION) EQUATIONS:
-    dx[9]  = []
-    dx[10] = []
-    dx[11] = []
+    dx[9]  = 0
+    dx[10] = 0
+    dx[11] = 0
 
     return dx

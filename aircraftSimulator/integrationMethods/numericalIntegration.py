@@ -1,6 +1,5 @@
-import numpy as np
 
-def foward_Euler(f, t_s, x, h_s):
+def forward_Euler(f, t_s, x, h_s, amod):
     """
         PERFORMS FORWARD EULER INTEGRATION TO APPROXIMATE THE SOLUTION OF A DIFFERENTIAL EQUATION
 
@@ -17,6 +16,6 @@ def foward_Euler(f, t_s, x, h_s):
 
     # FOWARD EULER CALCULATION METHOD
     for i in range(1, len(t_s)):
-        x[:, i] = x[:, i - 1] + h_s*f(t_s[i - 1], x[:, i - 1]) # EULER FORMULA
+        x[:, i] = x[:, i - 1] + h_s*f(t_s[i - 1], x[:, i - 1], amod) # EULER FORMULA
 
     return t_s, x
