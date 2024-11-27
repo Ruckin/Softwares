@@ -1,0 +1,13 @@
+README FILE WITH INFORMATION ON EACH PART OF THE CODE, AND EXTRA LINKS AND INFORMATIONS.
+
+
+
+## REFERENCES:
+
+# BEN DICKINSON WEB:
+https://learngandc.com/
+# VIDEO SERIES IN YOUTUBE:
+https://www.youtube.com/watch?v=1P14X-Y70wo&list=PLcmbTy9X3gXs4JVXYucrMz5bJ4ZuaEGJ_&index=10
+
+# ATMOSPHERIC MODEL:
+https://ntrs.nasa.gov/citations/19770009539

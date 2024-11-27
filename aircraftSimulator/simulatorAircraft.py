@@ -6,41 +6,50 @@
 
 ## LOADING THE LIBRARIES:
 import math
+import ussa1976
 import numpy as np
 import matplotlib.pyplot as plt
 
 ## IMPORTING THE METHODS AND MODELS:
-from integrationMethods import numericalIntegration
+from tools import Interpolators
+from vehicleModels import spheres
 from earthModel_eom import flatEarth
+from integrationMethods import numericalIntegration
 
 ########################################################################################################################
 ## BEGIN OF THE CODE:
 ########################################################################################################################
 
-## DEFINITION OF THE VEHICLE:
-r_sphere_m = 0.08
-m_sphere_kg = 5
-J_sphere_kgm2 = 0.4*m_sphere_kg*r_sphere_m**2
+# ATMOSPHERIC DATA:
+atmosphere = ussa1976.compute()
 
-amod = {"m_kg" : 1,
-        "Jxz_b_kgm2" : 0,
-        "Jxx_b_kgm2" : J_sphere_kgm2,
-        "Jyy_b_kgm2" : J_sphere_kgm2,
-        "Jzz_b_kgm2" : J_sphere_kgm2,}
+# GET ESSENTIAL GRAVITY AND ATMOSPHERIC DATA
+alt_m     = atmosphere["z"].values
+rho_kgpm3 = atmosphere["rho"].values
+c_mps     = atmosphere["cs"].values
+g_mps2    = ussa1976.core.compute_gravity(alt_m)
+
+amod = {"alt_m"     : alt_m,
+        "rho_kgpm3" : rho_kgpm3,
+        "c_mps"     : c_mps,
+        "g_mps2"    : g_mps2}
+
+# DEFINING THE VEHICLE:
+vmod = spheres.bowlingBall()
 
 ## INITIALIZATION:
-u0_b_mps   = 0
+u0_b_mps   = 0.001 # AVOIDS DIVIDING BY ZERO
 v0_b_mps   = 0
 w0_b_mps   = 0
 p0_b_rps   = 0
 q0_b_rps   = 0
 r0_b_rps   = 0
 phi0_rad   = 0*math.pi/180
-theta0_rad = 0*math.pi/180
+theta0_rad = -90*math.pi/180
 psi0_rad   = 0
 p10_n_m    = 0
 p20_n_m    = 0
-p30_n_m    = 0
+p30_n_m    = -10000
 
 x0 = np.array([
 u0_b_mps,
@@ -62,8 +71,8 @@ nx0 = x0.size
 
 # SETTING THE TIME CONDITIONS:
 t0_s = 0.0
-tf_s = 10
-h_s = 0.005
+tf_s = 100
+h_s = 0.01
 
 ## SEOND PART:
 
@@ -73,7 +82,45 @@ x = np.empty((nx0, nt_s), dtype = float)
 
 x[:, 0] = x0
 
-t_s, x = numericalIntegration.forward_Euler(flatEarth.flatModel_eom, t_s, x, h_s, amod)
+t_s, x = numericalIntegration.forward_Euler(flatEarth.flatModel_eom, t_s, x, h_s, vmod, amod)
+
+trueAirSpeed_mps = np.zeros((nt_s, 1))
+for i, element in enumerate(t_s):
+        trueAirSpeed_mps[i, 0] = math.sqrt(x[0, i]**2 + x[1, i]**2 + x[2, i]**2)
+
+Altitude_m = np.zeros((nt_s, 1))
+Cs_mps = np.zeros((nt_s, 1))
+Rho_kgm3 = np.zeros((nt_s, 1))
+
+for i, element in enumerate(t_s):
+        Altitude_m[i, 0] = -x[11, i]
+        Cs_mps[i, 0] = Interpolators.fastInterp1(amod["alt_m"], amod["c_mps"], Altitude_m[i, 0])
+        Rho_kgm3[i, 0] = Interpolators.fastInterp1(amod["alt_m"], amod["rho_kgm3"], Altitude_m[i, 0])
+
+# CALCULATING THE ANGLE OF ATTACK(AoA):
+alpha_rad = np.zeros((t_s, 1))
+for i, element in enumerate(t_s):
+        if x[0, i] == 0 and x[2, i] == 0:
+                w_over_v = 0
+        else:
+                w_over_v = x[2, i]/x[0, i]
+
+        alpha_rad[i, 0] = math.atan(w_over_v)
+
+# CALCULANTING THE ANGLE OF SIDE SLIPE:
+beta_rad = np.zeros((t_s, 1))
+for i, element in enumerate(t_s):
+        if x[i, 0] == 0 and trueAirSpeed_mps[i, 0] == 0:
+                v_over_VT = 0
+        else:
+                v_over_VT = x[1, i]/trueAirSpeed_mps[i, 0]
+
+        beta_rad[i, 0] = math.asin(v_over_VT)
+
+# CALCULATING THE MACH NUMBER:
+Mach = np.zeros((t_s, 1))
+for i, element in enumerate(t_s):
+        Mach[i, 0] = trueAirSpeed_mps[i, 0]/Cs_mps[i, 0]
 
 ## PLOTTING THE RESULTS:
 
