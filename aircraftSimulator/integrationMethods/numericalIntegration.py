@@ -1,5 +1,5 @@
 
-def forward_Euler(f, t_s, x, h_s, amod):
+def forward_Euler(f, t_s, x, h_s, vmod, amod):
     """
         PERFORMS FORWARD EULER INTEGRATION TO APPROXIMATE THE SOLUTION OF A DIFFERENTIAL EQUATION
 
@@ -16,6 +16,6 @@ def forward_Euler(f, t_s, x, h_s, amod):
 
     # FOWARD EULER CALCULATION METHOD
     for i in range(1, len(t_s)):
-        x[:, i] = x[:, i - 1] + h_s*f(t_s[i - 1], x[:, i - 1], amod) # EULER FORMULA
+        x[:, i] = x[:, i - 1] + h_s*f(t_s[i - 1], x[:, i - 1], vmod, amod) # EULER FORMULA
 
     return t_s, x

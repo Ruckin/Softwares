@@ -1,14 +1,15 @@
 ########################################################################################################################
-## LOADING THE NECESSARY LIBRARIES FOR DEVELOPING THE EARTHO MODEL:
+## LOADING THE NECESSARY LIBRARIES FOR DEVELOPING THE EARTH MODEL:
 ########################################################################################################################
 import math
 import numpy as np
+from tools import Interpolators
 
 ########################################################################################################################
 ## EXAMPLE OF MODEL FOR EARTH:
 ## THIS EXAMPLE USES THE FLAT EARTH EQUATIONS FOR MODELING THE EARTH
 ########################################################################################################################
-def flatModel_eom(t, x, amod):
+def flatModel_eom(t, x, vmod, amod):
     """ FUNCTION flatModel_eom: Contains the essential elements of a six degree of freedom simulation. The purpose of
                                 this function is to allow the numerical approximation of solutions of the governing
                                 equations for an aircraft.
@@ -61,28 +62,55 @@ def flatModel_eom(t, x, amod):
     p3_n_m    = x[11]
 
     # LOADING THE DATA:
-    m_kg       = amod["m_kg"]
-    Jxz_b_kgm2 = amod["Jxz_b_kgm2"]
-    Jxx_b_kgm2 = amod["Jxx_b_kgm2"]
-    Jyy_b_kgm2 = amod["Jyy_b_kgm2"]
-    Jzz_b_kgm2 = amod["Jzz_b_kgm2"]
+    m_kg       = vmod["m_kg"]
+    Jxz_b_kgm2 = vmod["Jxz_b_kgm2"]
+    Jxx_b_kgm2 = vmod["Jxx_b_kgm2"]
+    Jyy_b_kgm2 = vmod["Jyy_b_kgm2"]
+    Jzz_b_kgm2 = vmod["Jzz_b_kgm2"]
 
-    # AIR DATA CALCULATION(Mach, Altitude, AoA, AoS):
-    # ATMOSPHERIC MODEL:
+    # CORRECTING THE ALTITUDE:
+    h_m = -p3_n_m
+
+    #rho_interp_kgpm3 = Interpolators(amod["alt_m"], amod["rho_kgpm3"], h_m)
+    rho_interp_kgpm3 = 1.20
+    c_interp_mp2     = Interpolators.fastInterp1(amod["alt_m"], amod["c_mps"], h_m)
+
+    # AIR DATA CALCULATION(MACH, AoA, AoS):
+    trueAirSpeed_mps = math.sqrt(u_b_mps**2 + v_b_mps**2 + w_b_mps**2)
+    qbar_kgpms2      = 0.5*rho_interp_kgpm3*trueAirSpeed_mps**2
+
+    if u_b_mps == 0 and w_b_mps == 0:
+        w_over_u = 0
+    else:
+        w_over_u = w_b_mps/u_b_mps
+
+    if trueAirSpeed_mps == 0 and v_b_mps == 0:
+        v_over_VT = 0
+    else:
+        v_over_VT = v_b_mps/trueAirSpeed_mps
+
+    alpha_rad = math.atan(w_over_u)
+    beta_rad = math.asin(v_over_VT)
 
     # GRAVITY MODEL:
     # FIRST MODEL ACTS NORMAL TO THE EARTH TANGENT CS
-    gz_n_mps2 = 9.81
+    #gz_interp_n_mps2 = Interpolators(amod["alt_m"], amod["g_mps2"], h_m)
+    gz_interp_n_mps2 = 9.81
 
     # RESOLVING GRAVITY IN BODY COORDINATE SYSTEM:
-    gx_b_mps2 = -math.sin(theta_rad)*gz_n_mps2
-    gy_b_mps2 = math.sin(phi_rad)*math.cos(theta_rad)*gz_n_mps2
-    gz_b_mps2 = math.cos(phi_rad)*math.cos(theta_rad)*gz_n_mps2
+    gx_b_mps2 = -math.sin(theta_rad)*gz_interp_n_mps2
+    gy_b_mps2 = math.sin(phi_rad)*math.cos(theta_rad)*gz_interp_n_mps2
+    gz_b_mps2 = math.cos(phi_rad)*math.cos(theta_rad)*gz_interp_n_mps2
+
+    # AERODYNAMIC FORCES:
+    drag_kgmps2 = vmod(["CD_approx"])*qbar_kgpms2*vmod(["Aref_m2"])
+    side_kgmps2 = 0
+    lift_kgmps2 = 0
 
     # EXTERNAL FORCES:
-    Fx_b_kgmps2 = 0
-    Fy_b_kgmps2 = 0
-    Fz_b_kgmps2 = 0
+    Fx_b_kgmps2 = -(math.cos(alpha_rad)*math.cos(beta_rad)*drag_kgmps2 - math.cos(alpha_rad)*math.sin(beta_rad)*side_kgmps2 - math.sin(alpha_rad)*lift_kgmps2)
+    Fy_b_kgmps2 = -(math.sin(beta_rad)*drag_kgmps2 + math.cos(beta_rad)*side_kgmps2)
+    Fz_b_kgmps2 = -(math.sin(alpha_rad)*math.cos(beta_rad)*drag_kgmps2 - math.sin(alpha_rad)*math.sin(beta_rad)*side_kgmps2 + math.cos(alpha_rad)*lift_kgmps2)
 
     # EXTERNAL MOMENTS:
     l_b_kgm2ps2 = 0
@@ -129,12 +157,21 @@ def flatModel_eom(t, x, amod):
     # KINEMATICS EQUATIONS:
     # EULER KINEMATICS
     dx[6] = p_b_rps + math.tan(theta_rad)*(math.sin(phi_rad)*q_b_rps + math.cos(phi_rad)*r_b_rps)
+
     dx[7] = math.cos(phi_rad)*q_b_rps - math.sin(phi_rad)*r_b_rps
+
     dx[8] = 1/math.cos(theta_rad)*(math.sin(phi_rad)*q_b_rps + math.cos(phi_rad)*r_b_rps)
 
     # POSITION (NAVIGATION) EQUATIONS:
-    dx[9]  = 0
-    dx[10] = 0
-    dx[11] = 0
+    dx[9]  = math.cos(theta_rad)*math.cos(phi_rad)*u_b_mps + \
+            (-math.cos(phi_rad)*math.sin(psi_rad) + math.sin(phi_rad)*math.sin(theta_rad)*math.cos(psi_rad))*v_b_mps + \
+             (math.sin(phi_rad)*math.sin(psi_rad) + math.cos(phi_rad)*math.sin(theta_rad)*math.cos(psi_rad))*w_b_mps
+
+    dx[10] = math.cos(phi_rad)*math.sin(psi_rad)*u_b_mps + \
+            (math.cos(phi_rad)*math.cos(psi_rad) + math.sin(phi_rad)*math.sin(theta_rad)*math.sin(psi_rad))*v_b_mps + \
+            (-math.sin(phi_rad) * math.cos(psi_rad) + math.cos(phi_rad) * math.sin(theta_rad)*math.sin(psi_rad))*w_b_mps
+
+    dx[11] = -math.sin(theta_rad)*u_b_mps + math.sin(phi_rad)*math.cos(theta_rad)*v_b_mps + \
+              math.cos(phi_rad)*math.cos(theta_rad)*w_b_mps
 
     return dx
